@@ -14,7 +14,15 @@ const router = createRouter(
                         path: '',
                         name: 'welcome-login',
                         component: () => import('@/views/Welcome/LoginPage.vue')
-                    }
+                    }, {
+                        path: 'register',
+                        name: 'welcome-register',
+                        component: () => import('@/views/Welcome/RegisterPage.vue')
+                    }// {
+                    //     path: 'forget',
+                    //     name: 'welcome-forget',
+                    //     component: () => import('@/views/Welcome/ForgetPage.vue')
+                    // }
 
                 ]
             }, {
