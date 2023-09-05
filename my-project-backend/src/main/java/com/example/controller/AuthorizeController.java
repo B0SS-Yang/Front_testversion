@@ -36,5 +36,5 @@ public class AuthorizeController {
     private RestBean<Void> messageHandle(Supplier<String> action) {
         String message = action.get();
         return message == null ? RestBean.success() : RestBean.failure(400, message);
-    }//这个方法用于处理service层返回的消息，如果消息为null则返回200，否则返回400和消息
+    }
 }
