@@ -29,7 +29,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
     @Resource
     FlowUtils utils;
     @Resource
-    AmqpTemplate amqpTemplate;
+    AmqpTemplate amqpTemplate;//
 
     @Resource
     StringRedisTemplate stringRedisTemplate;
@@ -80,7 +80,7 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
             return "Email already exists";
         if (this.existsAccountByUsername(username))
             return "Username already exists";//并发问题，这里需要加锁
-        String password = encoder.encode(vo.getPassword());
+        String password = encoder.encode(vo.getPassword());//对密码进行加密
         Account account = new Account(null, username, password, email, "user", new Date());//这里是创建一个用户对象
         if (this.save(account)) {
             stringRedisTemplate.delete(key);//这里是注册成功后，删除redis中的验证码

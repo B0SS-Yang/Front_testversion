@@ -64,7 +64,7 @@ function userLogin() {
             </el-form-item>
           </el-col>
           <el-col :span="12" style="text-align: right">
-            <el-button type="text" size="small">forget password</el-button>
+            <el-link type="primary" @click="router.push('/reset')">forget password</el-link>
           </el-col>
         </el-row>
       </el-form>

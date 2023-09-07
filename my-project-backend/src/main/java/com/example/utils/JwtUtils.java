@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class JwtUtils {//这个类是用来生成token的，以及校验token的
+public class JwtUtils {
     @Value("${spring.security.jwt.key}")
     String key;
 
@@ -51,10 +51,11 @@ public class JwtUtils {//这个类是用来生成token的，以及校验token的
         long expire = Math.max(time.getTime() - now.getTime(), 0);
         template.opsForValue().set(Const.JTW_BLACK_LIST + uuid, "", expire, TimeUnit.MILLISECONDS);
         return true;
-    }
+    }//原理是使token立即过期
 
     public boolean isInvalidToken(String uuid) {
         return Boolean.TRUE.equals(template.hasKey(Const.JTW_BLACK_LIST + uuid));
+
     }
 
     public DecodedJWT resolveJwt(String headerToken) {
@@ -64,7 +65,7 @@ public class JwtUtils {//这个类是用来生成token的，以及校验token的
         JWTVerifier jwtVerifier = JWT.require(algorithm).build();
 
         try {
-            DecodedJWT verify = jwtVerifier.verify(token);
+            DecodedJWT verify = jwtVerifier.verify(token);//验证令牌并返回解码后的token
             if (this.isInvalidToken(verify.getId()))
                 return null;
             Date expiresAt = verify.getExpiresAt();
@@ -77,8 +78,14 @@ public class JwtUtils {//这个类是用来生成token的，以及校验token的
     public String createJwt(UserDetails details, int id, String username) {
         Algorithm algorithm = Algorithm.HMAC256(key);
         Date expire = this.expireTime();
-        return JWT.create().withJWTId(UUID.randomUUID().toString()).withClaim("id", id).withClaim("name", username).withClaim("authorities", details.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList()).withExpiresAt(expire).withIssuedAt(new Date()).sign(algorithm);
-    }
+        return JWT.create().
+                withJWTId(UUID.randomUUID().toString()).//随机生成一个UUID作为JWT的ID
+                withClaim("id", id).
+                withClaim("name", username).
+                withClaim("authorities", details.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList()).
+                withExpiresAt(expire).
+                withIssuedAt(new Date()).sign(algorithm);
+    }//创建 JWT 令牌。根据用户信息、用户ID、用户名等信息生成一个 JWT，并签名后返回。
 
     public Date expireTime() {
         Calendar calendar = Calendar.getInstance();
@@ -86,18 +93,18 @@ public class JwtUtils {//这个类是用来生成token的，以及校验token的
         return calendar.getTime();
     }
 
-    public UserDetails toUser(DecodedJWT jwt) {//这个方法是用来从token中获取用户信息的
+    public UserDetails toUser(DecodedJWT jwt) {
         Map<String, Claim> claims = jwt.getClaims();
         return User.withUsername(claims.get("name").asString()).password("******").authorities(claims.get("authorities").asArray(String.class)).build();
     }
 
-    public Integer toId(DecodedJWT jwt) {//这个方法是用来从token中获取用户id的
+    public Integer toId(DecodedJWT jwt) {
         Map<String, Claim> claims = jwt.getClaims();
         return claims.get("id").asInt();
     }
 
-    private String convertToken(String headerToken) {//这个方法是用来去除token前面的Bearer的
+    private String convertToken(String headerToken) {
         if (headerToken == null || !headerToken.startsWith("Bearer ")) return null;
         return headerToken.substring(7);
-    }
+    }//去除 JWT 令牌前面的 "Bearer " 字符串，以获取真正的令牌字符串。
 }
