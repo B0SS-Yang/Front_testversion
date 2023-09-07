@@ -3,7 +3,9 @@ package com.example.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.entity.dto.Account;
+import com.example.entity.vo.request.ConfirmResetVO;
 import com.example.entity.vo.request.EmailRegisterVO;
+import com.example.entity.vo.request.EmailResetVO;
 import com.example.mapper.AccountMapper;
 import com.example.service.AccountService;
 import com.example.utils.Const;
@@ -44,6 +46,33 @@ public class AccountServiceImpl extends ServiceImpl<AccountMapper, Account> impl
             throw new UsernameNotFoundException("用户or密码错误");
         return User.withUsername(username).password(account.getPassword()).roles(account.getRole()).build();
     }//这里是用来校验用户的，如果用户不存在，就会抛出异常，如果存在，就会返回一个UserDetails对象，这个对象里面包含了用户的信息，包括密码，角色等等
+
+    @Override
+    public String resetConfirm(ConfirmResetVO vo) {
+        String email = vo.getEmail();
+        String key = Const.VERIFY_EMAIL_DATA + email;
+        String code = stringRedisTemplate.opsForValue().get(key);//这里是从redis中获取验证码
+        if (code == null)
+            return "Wrong code!!";
+        if (!code.equals(vo.getCode()))
+            return "Verify code error";
+        return null;
+    }//这里是用来校验验证码的，如果验证码正确，就会返回null，如果错误，就会返回一个错误信息
+
+    @Override
+    public String resetEmailAccountPassword(EmailResetVO vo) {
+        String email = vo.getEmail();
+        String verify = this.resetConfirm(new ConfirmResetVO(vo.getEmail(), vo.getCode()));
+        if (verify != null)
+            return verify;
+        String password = encoder.encode(vo.getPassword());//对密码进行加密
+        boolean update = this.update().eq("email", email).set("password", password).update();
+        if (update){
+            stringRedisTemplate.delete(Const.VERIFY_EMAIL_DATA + email);
+        }
+        return null;
+
+    }
 
     public Account findAccountByNameOrEmail(String text) {
         return this.query().eq("username", text).or().eq("email", text).one();
