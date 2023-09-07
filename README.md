@@ -30,6 +30,8 @@ npm run build
 注意后端操作要在./my-project-backend目录下进行
 ### Project Setup安装依赖
 打开IDEA，导入项目，去pom.xml中下载依赖或者等待IDEA自动下载依赖
+### 邮箱配置
+在./my-project-backend/src/main/java/com/example/my-project-backend/resources/application.yml中修改邮箱配置
 ### Run
 点击IDEA右上角的运行按钮，选择运行后端程序（MyProjectBackendApplication）
 

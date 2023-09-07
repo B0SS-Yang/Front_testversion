@@ -1,9 +1,9 @@
 spring:
   mail:
-    host: smtp.qq.com
+    host: //这里填写smtp服务器地址
     port: 465
-    username: 1945374160@qq.com
-    password: wtyltrukhavjfbcg
+    username: //这里填写发件人邮箱
+    password: //这里填写授权码
     properties:
       mail:
         smtp:
